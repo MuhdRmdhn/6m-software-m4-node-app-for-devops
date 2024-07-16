@@ -26,6 +26,23 @@ jobs:
           echo "Running tests..."
           npm run test
 
+  build-and-push:
+    docker:
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.7
+      - docker/login:
+          username: $DOCKER_HUB_USERNAME
+          password: $DOCKER_HUB_PASSWORD
+      - run: |
+          echo "Building Docker image..."
+          docker build -t $DOCKER_HUB_USERNAME/flask-docker-app:latest .
+      - docker/push:
+          image: $DOCKER_HUB_USERNAME/flask-docker-app:latest
+
+
 workflows:
   simple_workflow:
     jobs:
