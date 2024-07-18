@@ -50,9 +50,9 @@ jobs:
       - checkout
       - docker/check
       - docker/build:
-          image: muhdrmdhn/education-space:1.0.0
+          image: muhdrmdhn/education-space
       - docker/push:
-          image: muhdrmdhn/education-space:1.0.0
+          image: muhdrmdhn/education-space
 
 
 workflows:
