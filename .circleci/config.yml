@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.1
   docker: circleci/docker@2.1.4
-  heroku: circleci/heroku@1.2.3
+  snyk: snyk/snyk@1.5.0
 
 jobs:
   build:
@@ -28,20 +28,16 @@ jobs:
           npm run test
 
   publish:
-    docker:
-      - image: cimg/base:stable
+    executor: docker/docker
     steps:
       - setup_remote_docker
       - checkout
-      - run:
-          name: Docker Login
-          command: |
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - run:
-          name: Docker Build and Push
-          command: |
-            docker build -t muhdrmdhn/education-space .
-            docker push muhdrmdhn/education-space
+      - docker/check
+      - docker/build:
+          image: muhdrmdhn/education-space
+      - docker/push:
+          image: muhdrmdhn/education-space
+
 
   deploy:
     docker:
@@ -56,7 +52,20 @@ jobs:
             heroku container:login
             heroku stack:set container -a muhd-ramadhan-su-devops
             heroku container:push web -a muhd-ramadhan-su-devops
-            heroku container:release web -a muhd-ramadhan-su-devops
+            heroku container:release web -a muhd-ramadhan-su-devops            
+  scan:
+    docker:
+      - image: cimg/node:16.10
+    environment:
+      IMAGE_NAME: mudrmdhn/education-space
+    steps:
+      - checkout
+      - setup_remote_docker      
+      - docker/check
+      - run: docker build -t $IMAGE_NAME .
+      - snyk/scan: 
+          docker-image-name: $IMAGE_NAME
+
 
 workflows:
   simple_workflow:
@@ -65,6 +74,12 @@ workflows:
       - test:
           requires:
             - build
+      - scan:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
       - publish:
           requires:
             - test
