@@ -37,22 +37,7 @@ jobs:
           image: muhdrmdhn/education-space
       - docker/push:
           image: muhdrmdhn/education-space
-
-
-  deploy:
-    docker:
-      - image: cimg/node:16.10
-    steps:
-      - setup_remote_docker
-      - heroku/install
-      - checkout
-      - run:
-          name: Heroku Container Push
-          command: |
-            heroku container:login
-            heroku stack:set container -a muhd-ramadhan-su-devops
-            heroku container:push web -a muhd-ramadhan-su-devops
-            heroku container:release web -a muhd-ramadhan-su-devops            
+           
   scan:
     docker:
       - image: cimg/node:16.10
